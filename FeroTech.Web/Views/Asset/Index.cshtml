@@ -1,0 +1,159 @@
+﻿@{
+    ViewData["Title"] = "Asset Details";
+}
+
+<h2>Asset Details</h2>
+<hr />
+
+<div class="text-end mb-3">
+    <a href="@Url.Action("Create", "Asset")" class="btn btn-success">+ Add Asset</a>
+</div>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.min.css" />
+
+<table id="assetTable" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Brand</th>
+            <th>Model</th>
+            <th>Purchase Date</th>
+            <th>Price</th>
+            <th>Warranty End</th>
+            <th>Status</th>
+            <th>Quantity</th>
+            <th>Active</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            let table = new DataTable('#assetTable', {
+                ajax: {
+                    url: '@Url.Action("GetAll", "Asset")',
+                    dataSrc: 'data'
+                },
+                columns: [
+                    { data: 'category' },
+                    { data: 'brand' },
+                    { data: 'modell' },
+                    {
+                        data: 'purchaseDate',
+                        render: d => d ? new Date(d).toLocaleDateString() : '-'
+                    },
+                    {
+                        data: 'purchasePrice',
+                        render: d => d ? `$${d.toFixed(2)}` : '-'
+                    },
+                    {
+                        data: 'warrantyEndDate',
+                        render: d => d ? new Date(d).toLocaleDateString() : '-'
+                    },
+                    { data: 'status' },
+                    { data: 'quantity' },
+                    {
+                        data: 'isActive',
+                        render: d => d ? 'Yes' : 'No'
+                    },
+                    {
+                        data: 'assetId',
+                        render: function (data) {
+                            return `
+                                <button class="btn btn-sm btn-primary edit-btn" data-id="${data}">Edit</button>
+                                <button class="btn btn-sm btn-danger delete-btn" data-id="${data}">Delete</button>
+                            `;
+                        }
+                    }
+                ]
+            });
+
+            // ---------------- DELETE ----------------
+            $('#assetTable').on('click', '.delete-btn', function () {
+                const id = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Delete this asset?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        $.post('@Url.Action("Delete", "Asset")', { id: id }, function (res) {
+                            if (res.success) {
+                                Swal.fire('Deleted!', res.message, 'success');
+                                table.ajax.reload();
+                            } else {
+                                Swal.fire('Error!', res.message, 'error');
+                            }
+                        });
+
+                    }
+                });
+            });
+
+            // ---------------- EDIT ----------------
+            $('#assetTable').on('click', '.edit-btn', function () {
+                const id = $(this).data('id');
+
+                $.get('@Url.Action("GetById", "Asset")', { id: id }, function (response) {
+
+                    if (!response.success) {
+                        Swal.fire('Error!', response.message, 'error');
+                        return;
+                    }
+
+                    const a = response.data;
+
+                    Swal.fire({
+                        title: 'Edit Asset',
+                        html: `
+                            <input id="category" class="swal2-input" value="${a.category}" placeholder="Category">
+                            <input id="brand" class="swal2-input" value="${a.brand}" placeholder="Brand">
+                            <input id="modell" class="swal2-input" value="${a.modell}" placeholder="Model">
+                            <input id="price" type="number" class="swal2-input" value="${a.purchasePrice || ''}" placeholder="Price">
+                            <input id="qty" type="number" class="swal2-input" value="${a.quantity}" placeholder="Quantity">
+                            <label><input type="checkbox" id="active" ${a.isActive ? 'checked' : ''}/> Active</label>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Save'
+                    }).then(result => {
+
+                        if (result.isConfirmed) {
+
+                            $.post('@Url.Action("Edit", "Asset")',
+                                {
+                                    AssetId: a.assetId,
+                                    Category: $('#category').val(),
+                                    Brand: $('#brand').val(),
+                                    Modell: $('#modell').val(),
+                                    PurchasePrice: $('#price').val(),
+                                    Quantity: $('#qty').val(),
+                                    IsActive: $('#active').is(':checked')
+                                },
+                                res => {
+                                    if (res.success) {
+                                        Swal.fire('Updated!', res.message, 'success');
+                                        table.ajax.reload();
+                                    } else {
+                                        Swal.fire('Error!', res.message, 'error');
+                                    }
+                                }
+                            );
+                        }
+                    });
+                });
+            });
+
+        });
+    </script>
+}

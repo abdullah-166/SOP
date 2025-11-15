@@ -1,0 +1,102 @@
+﻿@model IEnumerable<FeroTech.Infrastructure.Application.DTOs.DepartmentDto>
+
+@{
+    ViewData["Title"] = "Departments";
+}
+
+<h2>Departments</h2>
+<hr />
+
+<p>
+    <a asp-action="Create" class="btn btn-success">Add Department</a>
+</p>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Department Name</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.DepartmentName</td>
+                <td>@item.Description</td>
+                <td>
+                    @if (item.IsActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactive</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.DepartmentId" class="btn btn-sm btn-primary">
+                        <i class="fa fa-edit"></i> Edit
+                    </a>
+                    <button type="button" class="btn btn-sm btn-danger delete-dept" data-id="@item.DepartmentId">
+                        <i class="fa fa-trash"></i> Delete
+                    </button>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).on("click", ".delete-dept", function () {
+            var deptId = $(this).data("id");
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "This department will be permanently deleted.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Delete it!",
+                cancelButtonText: "Cancel",
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "Department")' + '?id=' + deptId,
+                        type: 'GET',
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Deleted!",
+                                    text: response.message
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire("Error!", response.message || "Something went wrong.", "error");
+                            }
+                        },
+                        error: function () {
+                            Swal.fire("Error!", "Server error occurred.", "error");
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+    </script>
+}

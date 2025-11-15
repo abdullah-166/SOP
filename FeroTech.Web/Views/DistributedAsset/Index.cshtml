@@ -1,0 +1,64 @@
+﻿@model IEnumerable<FeroTech.Infrastructure.Application.DTOs.DistributedAssetListDto>
+
+<h2 class="mb-3">Assigned Assets</h2>
+
+<div class="text-end mb-3">
+    <a href="/DistributedAsset/Create" class="btn btn-success">+ Assign New Asset</a>
+</div>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Employee</th>
+            <th>Asset</th>
+            <th>Category</th>
+            <th>Assigned</th>
+            <th>End</th>
+            <th>QR</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.EmployeeName (@item.EmployeePhone)</td>
+                <td>@item.AssetName</td>
+                <td>@item.CategoryName</td>
+                <td>@item.AssignedDate.ToShortDateString()</td>
+                <td>@(item.EndDate?.ToShortDateString() ?? "-")</td>
+                <td>
+                    <a href="/DistributedAsset/Edit/@item.DistributedAssetId" class="btn btn-primary btn-sm">Edit</a>
+                    <button class="btn btn-danger btn-sm deleteBtn" data-id="@item.DistributedAssetId">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).on("click", ".deleteBtn", function () {
+            let id = $(this).data("id");
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "This record will be deleted",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Delete"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    $.post("/DistributedAsset/Delete", { id: id }, function (res) {
+                        if (res.success) {
+                            Swal.fire("Deleted!", res.message, "success")
+                                .then(() => location.reload());
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

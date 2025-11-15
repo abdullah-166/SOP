@@ -1,0 +1,29 @@
+﻿@model FeroTech.Infrastructure.Application.DTOs.DepartmentDto
+
+@{
+    ViewData["Title"] = "Delete Department";
+}
+
+<h2>Delete Department</h2>
+<hr />
+
+<div class="alert alert-warning">
+    <strong>Warning:</strong> You are about to delete this department. This action cannot be undone.
+</div>
+
+<dl class="row">
+    <dt class="col-sm-2">Department Name</dt>
+    <dd class="col-sm-10">@Model.DepartmentName</dd>
+
+    <dt class="col-sm-2">Description</dt>
+    <dd class="col-sm-10">@Model.Description</dd>
+
+    <dt class="col-sm-2">Status</dt>
+    <dd class="col-sm-10">@((Model.IsActive ? "Active" : "Inactive"))</dd>
+</dl>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" asp-for="DepartmentId" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

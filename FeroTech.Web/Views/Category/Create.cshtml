@@ -1,0 +1,23 @@
+﻿@model FeroTech.Infrastructure.Application.DTOs.CategoryDto
+
+<h2>Add Category</h2>
+<hr />
+
+<form asp-action="Create">
+    <div class="mb-3">
+        <label class="form-label">Category Name</label>
+        <input asp-for="CategoryName" class="form-control" />
+        <span asp-validation-for="CategoryName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3 form-check">
+        <input class="form-check-input" asp-for="IsActive" />
+        <label class="form-check-label">Active</label>
+    </div>
+
+    <button class="btn btn-success">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

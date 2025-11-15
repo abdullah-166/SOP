@@ -1,0 +1,90 @@
+﻿@model FeroTech.Infrastructure.Application.DTOs.CategoryDto
+
+@{
+    ViewData["Title"] = "Edit Category";
+}
+
+<h2 class="mb-3">Edit Category</h2>
+<hr />
+
+<form id="editCategoryForm">
+    <input type="hidden" asp-for="CategoryId" />
+
+    <div class="mb-3">
+        <label class="form-label">Category Name</label>
+        <input asp-for="CategoryName" class="form-control" />
+        <span asp-validation-for="CategoryName" class="text-danger"></span>
+    </div>
+
+    @* <div class="mb-3">
+        <label class="form-label">Description (Optional)</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div> *@
+
+    <div class="text-end">
+        <button type="submit" class="btn btn-success">
+            <i class="fa fa-save"></i> Update
+        </button>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fa fa-arrow-left"></i> Back
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            $("#editCategoryForm").on("submit", function (e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: "Confirm Update",
+                    text: "Are you sure you want to update this category?",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, Update",
+                    cancelButtonText: "Cancel"
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '@Url.Action("Edit", "Category")',
+                            type: 'POST',
+                            data: $(this).serialize(),
+                            success: function (response) {
+
+                                if (response.success) {
+                                    Swal.fire({
+                                        title: "Updated!",
+                                        text: response.message,
+                                        icon: "success"
+                                    }).then(() => {
+                                        window.location.href = '@Url.Action("Index", "Category")';
+                                    });
+
+                                } else {
+                                    Swal.fire({
+                                        title: "Error",
+                                        text: response.message || "Something went wrong.",
+                                        icon: "error"
+                                    });
+                                }
+                            },
+                            error: function () {
+                                Swal.fire("Error", "Failed to update category.", "error");
+                            }
+                        });
+                    }
+                });
+
+            });
+
+        });
+    </script>
+}

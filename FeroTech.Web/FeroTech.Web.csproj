@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-FeroTech.Web-5e33da4d-a912-4cf0-a49f-f930b1556ce4</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="wwwroot\Pages\**" />
+    <Content Remove="wwwroot\Pages\**" />
+    <EmbeddedResource Remove="wwwroot\Pages\**" />
+    <None Remove="wwwroot\Pages\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.14" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.14" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.14" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    <PackageReference Include="PdfSharpCore" Version="1.3.67" />
+    <PackageReference Include="QRCoder" Version="1.7.0" />
+    <PackageReference Include="QuestPDF" Version="2025.7.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FeroTech.Infrastructure\FeroTech.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\Identity\Data\" />
+    <Folder Include="wwwroot\qrcodes\" />
+  </ItemGroup>
+
+</Project>

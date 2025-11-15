@@ -1,0 +1,100 @@
+﻿@model FeroTech.Infrastructure.Domain.Entities.DistributedAsset
+
+@{
+    var employees = ViewBag.EmployeeList as IEnumerable<FeroTech.Infrastructure.Application.DTOs.EmployeeDto>;
+    var categories = ViewBag.CategoryList as IEnumerable<FeroTech.Infrastructure.Application.DTOs.CategoryDto>;
+}
+
+<h2>Assign New Asset</h2>
+<hr />
+
+<form id="assignForm">
+    <div class="row">
+
+        <!-- Employee -->
+        <div class="col-md-6 mb-3">
+            <label>Employee</label>
+            <select asp-for="EmployeeId" id="EmployeeId" class="form-select">
+                <option value="">-- Select Employee --</option>
+                @foreach (var emp in employees)
+                {
+                    <option value="@emp.EmployeeId">@emp.FullName (@emp.Phone)</option>
+                }
+            </select>
+        </div>
+
+        <!-- Category -->
+        <div class="col-md-6 mb-3">
+            <label>Category</label>
+            <select asp-for="CategoryId" id="CategoryId" class="form-select">
+                <option value="">-- Select Category --</option>
+                @foreach (var cat in categories)
+                {
+                    <option value="@cat.CategoryId">@cat.CategoryName</option>
+                }
+            </select>
+        </div>
+
+        <!-- Asset -->
+        <div class="col-md-6 mb-3">
+            <label>Asset</label>
+            <select asp-for="AssetId" id="AssetId" class="form-select">
+                <option value="">-- Select Asset --</option>
+            </select>
+        </div>
+
+        <!-- Assigned Date -->
+        <div class="col-md-6 mb-3">
+            <label>Assigned Date</label>
+            <input asp-for="AssignedDate" type="date" class="form-control" />
+        </div>
+
+        <!-- End Date -->
+        <div class="col-md-6 mb-3">
+            <label>End Date</label>
+            <input asp-for="EndDate" type="date" class="form-control" />
+        </div>
+
+        <!-- Notes -->
+        <div class="col-md-12 mb-3">
+            <label>Notes</label>
+            <textarea asp-for="Notes" class="form-control"></textarea>
+        </div>
+
+        <div class="col-md-12 text-end">
+            <button type="submit" class="btn btn-primary">Assign</button>
+        </div>
+
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            $("#CategoryId").change(function () {
+                let id = $(this).val();
+                $("#AssetId").html("<option>Loading...</option>");
+
+                $.get("/DistributedAsset/GetAssetsByCategory", { categoryId: id }, function (data) {
+                    $("#AssetId").html('<option value="">-- Select Asset --</option>');
+                    data.forEach(x => $("#AssetId").append(`<option value="${x.assetId}">${x.name}</option>`));
+                });
+            });
+
+            $("#assignForm").submit(function (e) {
+                e.preventDefault();
+
+                $.post("/DistributedAsset/Create", $(this).serialize(), function (res) {
+                    if (res.success) {
+                        Swal.fire("Success", res.message, "success")
+                            .then(() => window.location.href = "/DistributedAsset/Index");
+                    } else {
+                        Swal.fire("Error", res.message, "error");
+                    }
+                });
+            });
+
+        });
+    </script>
+}

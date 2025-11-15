@@ -1,0 +1,32 @@
+﻿@model IEnumerable<FeroTech.Infrastructure.Domain.Entities.Notification>
+
+<h2>Notifications</h2>
+<hr />
+
+<form asp-action="MarkAllAsRead" method="post">
+    <button type="submit" class="btn btn-primary mb-3">Mark All as Read</button>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Message</th>
+            <th>Module</th>
+            <th>Action</th>
+            <th>Status</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var n in Model)
+        {
+            <tr class="@(n.IsRead ? "" : "table-warning")">
+                <td>@n.Message</td>
+                <td>@n.Module</td>
+                <td>@n.ActionType</td>
+                <td>@(n.IsRead ? "Read" : "Unread")</td>
+                <td>@n.CreatedAt.ToString("g")</td>
+            </tr>
+        }
+    </tbody>
+</table>

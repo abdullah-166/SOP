@@ -1,0 +1,102 @@
+﻿@{
+    ViewData["Title"] = "Employee Management";
+}
+
+<h2 class="mb-4">Employee List</h2>
+
+<div class="mb-3 text-end">
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa fa-plus"></i> Add Employee
+    </a>
+</div>
+
+<table id="employeeTable" class="table table-bordered table-striped w-100">
+    <thead class="table-dark">
+        <tr>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Department</th>
+            <th>Job Title</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            var table = $('#employeeTable').DataTable({
+                ajax: {
+                    url: '/Employee/GetAll',
+                    dataSrc: ''
+                },
+                columns: [
+                    { data: 'fullName' },
+                    { data: 'email' },
+                    { data: 'phone' },
+                    { data: 'departmentName' },
+                    { data: 'jobTitle' },
+                    {
+                        data: 'isActive',
+                        render: function (data) {
+                            return data
+                                ? '<span class="badge bg-success">Active</span>'
+                                : '<span class="badge bg-danger">Inactive</span>';
+                        }
+                    },
+                    {
+                        data: 'employeeId',
+                        render: function (id) {
+                            return `
+                                <a href="/Employee/Edit/${id}" class="btn btn-sm btn-warning me-1">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                                <button class="btn btn-sm btn-danger deleteBtn" data-id="${id}">
+                                    <i class="fa fa-trash"></i>
+                                </button>`;
+                        }
+                    }
+                ]
+            });
+
+            $(document).on('click', '.deleteBtn', function () {
+                var id = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/Employee/Delete',
+                            type: 'POST',
+                            data: { id: id },
+                            success: function (response) {
+                                if (response.success) {
+                                    Swal.fire('Deleted!', response.message, 'success');
+                                    table.ajax.reload();
+                                } else {
+                                    Swal.fire('Error!', response.message, 'error');
+                                }
+                            },
+                            error: function () {
+                                Swal.fire('Error!', 'Something went wrong.', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}

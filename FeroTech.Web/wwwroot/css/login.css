@@ -1,0 +1,23 @@
+﻿.gradient-custom {
+    background: #6a11cb;
+    background: -webkit-linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
+    background: linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
+}
+
+.card {
+    border-radius: 1rem;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.form-label {
+    color: #fff;
+}
+
+.btn-outline-light:hover {
+    background-color: #fff;
+    color: #000;
+}
+
+.text-danger {
+    color: #ff5c5c !important;
+}
