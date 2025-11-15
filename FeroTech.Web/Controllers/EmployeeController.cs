@@ -71,7 +71,7 @@ namespace FeroTech.Web.Controllers
             );
 
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return Json(new { success = true, message = "Employee created successfully" });
+                return Json(new { success = true, message = "Employee created" });
 
             TempData["Message"] = "Employee created successfully!";
             return RedirectToAction("Index");
@@ -144,7 +144,7 @@ namespace FeroTech.Web.Controllers
                 actionType: "Delete"
             );
 
-            return Json(new { success = true, message = "Employee deleted successfully!" });
+            return Json(new { success = true, message = "Employee deleted!" });
         }
     }
 }
