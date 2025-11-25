@@ -27,9 +27,9 @@ namespace FeroTech.Infrastructure.Application.DTOs
 
         [StringLength(255)]
         public string? Notes { get; set; }
-        public string? EmployeeName { get; set; }
-        public string? EmployeePhone { get; set; }
-        public string? AssetName { get; set; }
-        public string? CategoryName { get; set; }
+        public string EmployeeName { get; set; } = "";
+        public string EmployeePhone { get; set; } = "";
+        public string AssetName { get; set; } = "";
+        public string CategoryName { get; set; } = "";
     }
 }

@@ -19,11 +19,14 @@
         <div class="col-md-6 mb-3">
             <label>Employee</label>
             <select name="EmployeeId" id="EmployeeId" class="form-select">
-                @foreach (var emp in employees)
+                @if (employees != null)
                 {
-                    <option value="@emp.EmployeeId" @(emp.EmployeeId == Model.EmployeeId ? "selected" : "")>
-                        @emp.FullName (@emp.Phone)
-                    </option>
+                    foreach (var emp in employees)
+                    {
+                        <option value="@emp.EmployeeId" @(emp.EmployeeId == Model.EmployeeId ? "selected" : "")>
+                            @emp.FullName (@emp.Phone)
+                        </option>
+                    }
                 }
             </select>
         </div>
@@ -32,11 +35,14 @@
         <div class="col-md-6 mb-3">
             <label>Category</label>
             <select name="CategoryId" id="CategoryId" class="form-select">
-                @foreach (var cat in categories)
+                @if (categories != null)
                 {
-                    <option value="@cat.CategoryId" @(cat.CategoryId == Model.CategoryId ? "selected" : "")>
-                        @cat.CategoryName
-                    </option>
+                    foreach (var cat in categories)
+                    {
+                        <option value="@cat.CategoryId" @(cat.CategoryId == Model.CategoryId ? "selected" : "")>
+                            @cat.CategoryName
+                        </option>
+                    }
                 }
             </select>
         </div>
@@ -45,11 +51,14 @@
         <div class="col-md-6 mb-3">
             <label>Asset</label>
             <select name="AssetId" id="AssetId" class="form-select">
-                @foreach (var a in assets)
+                @if (assets != null)
                 {
-                    <option value="@a.AssetId" @(a.AssetId == Model.AssetId ? "selected" : "")>
-                        @a.Brand @a.Modell
-                    </option>
+                    foreach (var a in assets)
+                    {
+                        <option value="@a.AssetId" @(a.AssetId == Model.AssetId ? "selected" : "")>
+                            @a.Brand @a.Modell
+                        </option>
+                    }
                 }
             </select>
         </div>
@@ -57,16 +66,21 @@
         <!-- DATES -->
         <div class="col-md-6 mb-3">
             <label>Assigned Date</label>
-            <input name="AssignedDate" type="date" class="form-control"
-                   value="@((Model.AssignedDate == DateTime.MinValue ? DateTime.Today : Model.AssignedDate).ToString("yyyy-MM-dd"))" />
+            <input name="AssignedDate"
+                   type="date"
+                   class="form-control"
+                   value="@Model.AssignedDate.ToString("yyyy-MM-dd")" />
         </div>
 
         <div class="col-md-6 mb-3">
             <label>End Date</label>
-            <input name="EndDate" type="date" class="form-control"
-                   value="@Model.EndDate?.ToString("yyyy-MM-dd")" />
+            <input name="EndDate"
+                   type="date"
+                   class="form-control"
+                   value="@(Model.EndDate?.ToString("yyyy-MM-dd"))" />
         </div>
 
+        <!-- NOTES -->
         <div class="col-md-12 mb-3">
             <label>Notes</label>
             <textarea name="Notes" class="form-control">@Model.Notes</textarea>
@@ -86,19 +100,23 @@
     <script>
         $(document).ready(function () {
 
-            // When category changes → reload assets
+            // Reload assets when category changes
             $("#CategoryId").change(function () {
-                let id = $(this).val();
+                let cid = $(this).val();
 
-                $.get("/DistributedAsset/GetAssetsByCategory", { categoryId: id }, function (data) {
-                    $("#AssetId").empty().append('<option value="">-- Select Asset --</option>');
-                    data.forEach(a => {
-                        $("#AssetId").append(`<option value="${a.assetId}">${a.name}</option>`);
+                $("#AssetId").html('<option>Loading...</option>');
+
+                $.get("/DistributedAsset/GetAssetsByCategory",
+                    { categoryId: cid },
+                    function (data) {
+                        $("#AssetId").html('<option value="">-- Select Asset --</option>');
+                        data.forEach(a => {
+                            $("#AssetId").append(`<option value="${a.assetId}">${a.name}</option>`);
+                        });
                     });
-                });
             });
 
-            // Submit update form
+            // Submit via AJAX
             $("#editForm").submit(function (e) {
                 e.preventDefault();
 
@@ -113,6 +131,9 @@
                         } else {
                             Swal.fire("Error", res.message, "error");
                         }
+                    },
+                    error: function () {
+                        Swal.fire("Error", "Something went wrong.", "error");
                     }
                 });
             });
