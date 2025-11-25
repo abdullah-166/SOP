@@ -47,7 +47,9 @@
         <div class="col-md-6 mb-3">
             <label>Assigned Date</label>
             <input asp-for="AssignedDate" type="date" class="form-control"
-                   value="@Model.AssignedDate.ToString("yyyy-MM-dd")" />
+                   value="@(Model.AssignedDate == default
+                                   ? DateTime.Today.ToString("yyyy-MM-dd")
+                                   : Model.AssignedDate.ToString("yyyy-MM-dd"))" />
         </div>
 
         <!-- End Date -->

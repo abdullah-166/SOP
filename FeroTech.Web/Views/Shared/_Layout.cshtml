@@ -20,8 +20,14 @@
             <li class="@((ViewContext?.RouteData?.Values["Controller"]?.ToString() == "Home") ? "active" : "")">
                 <a asp-controller="Home" asp-action="Index"><i class="fa-solid fa-table-columns"></i><span>Dashboard</span></a>
             </li>
+            <li class="@((ViewContext?.RouteData?.Values["Controller"]?.ToString() == "Department") ? "active" : "")">
+                <a asp-controller="Department" asp-action="Index"><i class="fa-solid fa-layer-group"></i><span>Department</span></a>
+            </li>
             <li class="@((ViewContext?.RouteData?.Values["Controller"]?.ToString() == "Employee") ? "active" : "")">
-                <a asp-controller="Employee" asp-action="Index"><i class="fa-solid fa-users"></i><span>Employees</span></a>
+                <a asp-controller="Employee" asp-action="Index"><i class="fa-solid fa-users"></i><span>Employee</span></a>
+            </li>
+            <li class="@((ViewContext?.RouteData?.Values["Controller"]?.ToString() == "Category") ? "active" : "")">
+                <a asp-controller="Category" asp-action="Index"><i class="fa-solid fa-table"></i><span>Category</span></a>
             </li>
             <li class="@((ViewContext?.RouteData?.Values["Controller"]?.ToString() == "Asset") ? "active" : "")">
                 <a asp-controller="Asset" asp-action="Index"><i class="fa-solid fa-briefcase"></i><span>Assets</span></a>

@@ -10,13 +10,21 @@
 
 <h2 class="mb-3">Assigned Assets</h2>
 
-<div class="text-end mb-3">
-    <a href="/DistributedAsset/Create" class="btn btn-success">+ Assign New Asset</a>
+<div class="row mb-3">
+    <div class="col-md-4">
+        <!-- SEARCHBAR -->
+        <input type="text"
+               id="customSearch"
+               class="form-control"
+               placeholder="Search employee, phone, asset, category, date..." />
+    </div>
+
+    <div class="col-md-8 text-end">
+        <a href="/DistributedAsset/Create" class="btn btn-success">+ Assign New Asset</a>
+    </div>
 </div>
 
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
-
-<table id="groupedTable" class="table table-bordered display">
+<table id="groupedTable" class="table table-bordered">
     <thead class="table-dark">
         <tr>
             <th>Employee</th>
@@ -47,14 +55,16 @@
 
                     <td>@item.AssetName</td>
                     <td>@item.CategoryName</td>
-
-                    <!-- UPDATED DATE FORMAT -->
                     <td>@item.AssignedDate.ToString("MM/dd/yyyy")</td>
                     <td>@(item.EndDate?.ToString("MM/dd/yyyy") ?? "-")</td>
 
                     <td>
                         <a href="/DistributedAsset/Edit/@item.DistributedAssetId" class="btn btn-primary btn-sm">Edit</a>
-                        <button class="btn btn-danger btn-sm deleteBtn" data-id="@item.DistributedAssetId">Delete</button>
+                        <button type="button"
+                                class="btn btn-danger btn-sm deleteBtn"
+                                data-id="@item.DistributedAssetId">
+                            Delete
+                        </button>
                     </td>
                 </tr>
             }
@@ -64,42 +74,59 @@
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // Disable DataTables error popup for rowspan tables
-        $.fn.dataTable.ext.errMode = 'none';
-
         $(document).ready(function () {
 
-            $("#groupedTable").DataTable({
-                paging: true,
-                searching: true,
-                ordering: false,
-                info: false,
-                autoWidth: false,
-                responsive: false
+            // 🔍 SIMPLE CLIENT-SIDE SEARCH (no DataTables, safe with rowspan)
+            $("#customSearch").on("keyup", function () {
+                let value = $(this).val().toLowerCase();
+
+                if (!value) {
+                    // Show all rows if search is empty
+                    $("#groupedTable tbody tr").show();
+                    return;
+                }
+
+                $("#groupedTable tbody tr").each(function () {
+                    let rowText = $(this).text().toLowerCase();
+                    $(this).toggle(rowText.indexOf(value) > -1);
+                });
             });
 
-            // DELETE BUTTON
+            // 🗑️ WORKING DELETE BUTTON (plain jQuery + AJAX)
             $(document).on("click", ".deleteBtn", function () {
                 let id = $(this).data("id");
 
                 Swal.fire({
                     title: "Are you sure?",
-                    text: "This assignment will be removed",
+                    text: "This assigned asset will be deleted!",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonText: "Delete"
-                }).then(res => {
-                    if (res.isConfirmed) {
-                        $.post("/DistributedAsset/Delete", { id: id }, function (response) {
-                            if (response.success) {
-                                Swal.fire("Deleted!", response.message, "success")
-                                    .then(() => location.reload());
-                            } else {
-                                Swal.fire("Error", response.message, "error");
+                }).then(result => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: "/DistributedAsset/Delete",
+                            type: "POST",
+                            data: { id: id },
+
+                            success: function (response) {
+                                if (response.success) {
+                                    Swal.fire("Deleted!", response.message, "success")
+                                        .then(() => {
+                                            // reload page so rowspan/employee grouping is recalculated
+                                            window.location.reload();
+                                        });
+                                } else {
+                                    Swal.fire("Error", response.message, "error");
+                                }
+                            },
+
+                            error: function () {
+                                Swal.fire("Error", "Delete request failed!", "error");
                             }
                         });
                     }

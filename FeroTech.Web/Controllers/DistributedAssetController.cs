@@ -96,10 +96,12 @@ namespace FeroTech.Web.Controllers
         }
 
         [HttpPost]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> Delete(Guid id)
         {
             var item = await _distributedRepo.GetByIdAsync(id);
-            if (item == null) return Json(new { success = false, message = "Record not found." });
+            if (item == null)
+                return Json(new { success = false, message = "Record not found." });
 
             var asset = await _assetRepo.GetByIdAsync(item.AssetId);
             if (asset != null)
@@ -108,19 +110,7 @@ namespace FeroTech.Web.Controllers
                 await _assetRepo.UpdateAsync(asset);
             }
 
-            // Get names for notification before delete
-            var emp = await _employeeRepo.GetByIdAsync(item.EmployeeId);
-            string assetName = asset != null ? asset.Brand : "Asset";
-            string empName = emp != null ? emp.FullName : "Employee";
-
             await _distributedRepo.DeleteAsync(id);
-
-            // --- SignalR ---
-            string msg = $"Asset '{assetName}' unassigned from '{empName}'.";
-            await _notificationRepo.AddAsync(msg, "Distribution", "Unassign");
-            int count = await _notificationRepo.GetUnreadCountAsync();
-            await _hubContext.Clients.All.SendAsync("ReceiveNotification", msg, count);
-            // ----------------
 
             return Json(new { success = true, message = "Deleted successfully!" });
         }
