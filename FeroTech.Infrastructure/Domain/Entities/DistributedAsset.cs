@@ -27,5 +27,6 @@ namespace FeroTech.Infrastructure.Domain.Entities
 
         [StringLength(255)]
         public string? Notes { get; set; }
+        public string? QRCodeValue { get; set; }
     }
 }

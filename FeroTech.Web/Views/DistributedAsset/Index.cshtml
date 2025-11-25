@@ -1,64 +1,111 @@
 ﻿@model IEnumerable<FeroTech.Infrastructure.Application.DTOs.DistributedAssetListDto>
 
+@{
+    ViewData["Title"] = "Assigned Assets";
+
+    var grouped = Model
+        .GroupBy(x => new { x.EmployeeId, x.EmployeeName, x.EmployeePhone })
+        .ToList();
+}
+
 <h2 class="mb-3">Assigned Assets</h2>
 
 <div class="text-end mb-3">
     <a href="/DistributedAsset/Create" class="btn btn-success">+ Assign New Asset</a>
 </div>
 
-<table class="table table-bordered">
-    <thead>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+
+<table id="groupedTable" class="table table-bordered display">
+    <thead class="table-dark">
         <tr>
             <th>Employee</th>
+            <th>Phone</th>
             <th>Asset</th>
             <th>Category</th>
-            <th>Assigned</th>
-            <th>End</th>
-            <th>QR</th>
-            <th>Actions</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Action</th>
         </tr>
     </thead>
+
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var group in grouped)
         {
-            <tr>
-                <td>@item.EmployeeName (@item.EmployeePhone)</td>
-                <td>@item.AssetName</td>
-                <td>@item.CategoryName</td>
-                <td>@item.AssignedDate.ToShortDateString()</td>
-                <td>@(item.EndDate?.ToShortDateString() ?? "-")</td>
-                <td>
-                    <a href="/DistributedAsset/Edit/@item.DistributedAssetId" class="btn btn-primary btn-sm">Edit</a>
-                    <button class="btn btn-danger btn-sm deleteBtn" data-id="@item.DistributedAssetId">Delete</button>
-                </td>
-            </tr>
+            int rowSpan = group.Count();
+            bool first = true;
+
+            foreach (var item in group)
+            {
+                <tr>
+                    @if (first)
+                    {
+                        <td rowspan="@rowSpan" class="fw-bold">@group.Key.EmployeeName</td>
+                        <td rowspan="@rowSpan">@group.Key.EmployeePhone</td>
+                        first = false;
+                    }
+
+                    <td>@item.AssetName</td>
+                    <td>@item.CategoryName</td>
+
+                    <!-- UPDATED DATE FORMAT -->
+                    <td>@item.AssignedDate.ToString("MM/dd/yyyy")</td>
+                    <td>@(item.EndDate?.ToString("MM/dd/yyyy") ?? "-")</td>
+
+                    <td>
+                        <a href="/DistributedAsset/Edit/@item.DistributedAssetId" class="btn btn-primary btn-sm">Edit</a>
+                        <button class="btn btn-danger btn-sm deleteBtn" data-id="@item.DistributedAssetId">Delete</button>
+                    </td>
+                </tr>
+            }
         }
     </tbody>
 </table>
 
 @section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        $(document).on("click", ".deleteBtn", function () {
-            let id = $(this).data("id");
+        // Disable DataTables error popup for rowspan tables
+        $.fn.dataTable.ext.errMode = 'none';
 
-            Swal.fire({
-                title: "Are you sure?",
-                text: "This record will be deleted",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Delete"
-            }).then(result => {
-                if (result.isConfirmed) {
-                    $.post("/DistributedAsset/Delete", { id: id }, function (res) {
-                        if (res.success) {
-                            Swal.fire("Deleted!", res.message, "success")
-                                .then(() => location.reload());
-                        }
-                    });
-                }
+        $(document).ready(function () {
+
+            $("#groupedTable").DataTable({
+                paging: true,
+                searching: true,
+                ordering: false,
+                info: false,
+                autoWidth: false,
+                responsive: false
             });
+
+            // DELETE BUTTON
+            $(document).on("click", ".deleteBtn", function () {
+                let id = $(this).data("id");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "This assignment will be removed",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Delete"
+                }).then(res => {
+                    if (res.isConfirmed) {
+                        $.post("/DistributedAsset/Delete", { id: id }, function (response) {
+                            if (response.success) {
+                                Swal.fire("Deleted!", response.message, "success")
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire("Error", response.message, "error");
+                            }
+                        });
+                    }
+                });
+            });
+
         });
     </script>
 }

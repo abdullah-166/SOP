@@ -16,7 +16,7 @@
             <label>Employee</label>
             <select asp-for="EmployeeId" id="EmployeeId" class="form-select">
                 <option value="">-- Select Employee --</option>
-                @foreach (var emp in employees)
+                @foreach (var emp in employees ?? Enumerable.Empty<FeroTech.Infrastructure.Application.DTOs.EmployeeDto>())
                 {
                     <option value="@emp.EmployeeId">@emp.FullName (@emp.Phone)</option>
                 }
@@ -28,7 +28,7 @@
             <label>Category</label>
             <select asp-for="CategoryId" id="CategoryId" class="form-select">
                 <option value="">-- Select Category --</option>
-                @foreach (var cat in categories)
+                @foreach (var cat in categories ?? Enumerable.Empty<FeroTech.Infrastructure.Application.DTOs.CategoryDto>())
                 {
                     <option value="@cat.CategoryId">@cat.CategoryName</option>
                 }
@@ -46,7 +46,8 @@
         <!-- Assigned Date -->
         <div class="col-md-6 mb-3">
             <label>Assigned Date</label>
-            <input asp-for="AssignedDate" type="date" class="form-control" />
+            <input asp-for="AssignedDate" type="date" class="form-control"
+                   value="@Model.AssignedDate.ToString("yyyy-MM-dd")" />
         </div>
 
         <!-- End Date -->
@@ -69,9 +70,33 @@
 </form>
 
 @section Scripts {
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         $(document).ready(function () {
 
+            // enable search on all 3 selects
+            $("#EmployeeId").select2({
+                placeholder: "Select employee",
+                allowClear: true,
+                width: '100%'
+            });
+
+            $("#CategoryId").select2({
+                placeholder: "Select category",
+                allowClear: true,
+                width: '100%'
+            });
+
+            $("#AssetId").select2({
+                placeholder: "Select asset",
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Load assets by category
             $("#CategoryId").change(function () {
                 let id = $(this).val();
                 $("#AssetId").html("<option>Loading...</option>");
@@ -79,9 +104,11 @@
                 $.get("/DistributedAsset/GetAssetsByCategory", { categoryId: id }, function (data) {
                     $("#AssetId").html('<option value="">-- Select Asset --</option>');
                     data.forEach(x => $("#AssetId").append(`<option value="${x.assetId}">${x.name}</option>`));
+                    $("#AssetId").val(null).trigger('change'); // reset & refresh select2
                 });
             });
 
+            // Submit form
             $("#assignForm").submit(function (e) {
                 e.preventDefault();
 
