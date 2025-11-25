@@ -2,8 +2,10 @@
 using FeroTech.Infrastructure.Application.Interfaces;
 using FeroTech.Infrastructure.Data;
 using FeroTech.Infrastructure.Domain.Entities;
+using FeroTech.Web.Hubs; // Added
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR; // Added
 using Microsoft.EntityFrameworkCore;
 
 namespace FeroTech.Web.Controllers
@@ -15,23 +17,23 @@ namespace FeroTech.Web.Controllers
         private readonly IEmployeeRepository _rep;
         private readonly INotificationRepository _notificationRepo;
         private readonly IDepartmentRepository _departmentRepo;
+        private readonly IHubContext<NotificationHub> _hubContext; // Added
 
         public EmployeeController(
             ApplicationDbContext context,
             IEmployeeRepository rep,
             INotificationRepository notificationRepo,
-            IDepartmentRepository departmentRepo)
+            IDepartmentRepository departmentRepo,
+            IHubContext<NotificationHub> hubContext) // Injected
         {
             _context = context;
             _rep = rep;
             _notificationRepo = notificationRepo;
             _departmentRepo = departmentRepo;
+            _hubContext = hubContext;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public IActionResult Index() => View();
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -48,27 +50,25 @@ namespace FeroTech.Web.Controllers
             return View(new EmployeeDto());
         }
 
-
         [HttpPost]
         public async Task<IActionResult> Create(EmployeeDto model)
         {
             if (!ModelState.IsValid)
             {
                 ViewBag.Departments = await _departmentRepo.GetAllAsync();
-
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                    return Json(new { success = false, message = "Validation failed. Please check inputs." });
-
+                    return Json(new { success = false, message = "Validation failed." });
                 return View(model);
             }
 
             await _rep.Create(model);
 
-            await _notificationRepo.AddAsync(
-                message: $"New employee '{model.FullName}' was created.",
-                module: "Employee",
-                actionType: "Create"
-            );
+            // --- SignalR ---
+            string msg = $"New employee '{model.FullName}' was created.";
+            await _notificationRepo.AddAsync(msg, "Employee", "Create");
+            int count = await _notificationRepo.GetUnreadCountAsync();
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", msg, count);
+            // ----------------
 
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 return Json(new { success = true, message = "Employee created" });
@@ -77,13 +77,11 @@ namespace FeroTech.Web.Controllers
             return RedirectToAction("Index");
         }
 
-
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
             var employee = await _rep.GetByIdAsync(id);
-            if (employee == null)
-                return NotFound();
+            if (employee == null) return NotFound();
 
             var model = new EmployeeDto
             {
@@ -97,17 +95,14 @@ namespace FeroTech.Web.Controllers
             };
 
             ViewBag.Departments = await _departmentRepo.GetAllAsync();
-
-            return View(model);   
+            return View(model);
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Edit(Employee model)
         {
             var employee = await _context.Employees.FindAsync(model.EmployeeId);
-            if (employee == null)
-                return Json(new { success = false, message = "Employee not found." });
+            if (employee == null) return Json(new { success = false, message = "Employee not found." });
 
             employee.FullName = model.FullName;
             employee.Email = model.Email;
@@ -119,11 +114,12 @@ namespace FeroTech.Web.Controllers
             _context.Update(employee);
             await _context.SaveChangesAsync();
 
-            await _notificationRepo.AddAsync(
-                message: $"Employee '{employee.FullName}' was updated.",
-                module: "Employee",
-                actionType: "Update"
-            );
+            // --- SignalR ---
+            string msg = $"Employee '{employee.FullName}' was updated.";
+            await _notificationRepo.AddAsync(msg, "Employee", "Update");
+            int count = await _notificationRepo.GetUnreadCountAsync();
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", msg, count);
+            // ----------------
 
             return Json(new { success = true, message = "Employee updated successfully!" });
         }
@@ -132,17 +128,18 @@ namespace FeroTech.Web.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var employee = await _context.Employees.FindAsync(id);
-            if (employee == null)
-                return Json(new { success = false, message = "Employee not found." });
+            if (employee == null) return Json(new { success = false, message = "Employee not found." });
 
+            string name = employee.FullName;
             _context.Employees.Remove(employee);
             await _context.SaveChangesAsync();
 
-            await _notificationRepo.AddAsync(
-                message: $"Employee '{employee.FullName}' was deleted.",
-                module: "Employee",
-                actionType: "Delete"
-            );
+            // --- SignalR ---
+            string msg = $"Employee '{name}' was deleted.";
+            await _notificationRepo.AddAsync(msg, "Employee", "Delete");
+            int count = await _notificationRepo.GetUnreadCountAsync();
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", msg, count);
+            // ----------------
 
             return Json(new { success = true, message = "Employee deleted!" });
         }

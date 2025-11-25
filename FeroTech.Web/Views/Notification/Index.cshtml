@@ -1,32 +1,78 @@
 ﻿@model IEnumerable<FeroTech.Infrastructure.Domain.Entities.Notification>
 
-<h2>Notifications</h2>
-<hr />
+@{
+    ViewData["Title"] = "Notifications";
+}
 
-<form asp-action="MarkAllAsRead" method="post">
-    <button type="submit" class="btn btn-primary mb-3">Mark All as Read</button>
-</form>
+<div class="container mt-4">
+    <h2>Notifications</h2>
+    <hr />
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Message</th>
-            <th>Module</th>
-            <th>Action</th>
-            <th>Status</th>
-            <th>Date</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var n in Model)
-        {
-            <tr class="@(n.IsRead ? "" : "table-warning")">
-                <td>@n.Message</td>
-                <td>@n.Module</td>
-                <td>@n.ActionType</td>
-                <td>@(n.IsRead ? "Read" : "Unread")</td>
-                <td>@n.CreatedAt.ToString("g")</td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Message</th>
+                        <th>Module</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th class="text-center" style="width: 150px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                No notifications found.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var n in Model)
+                        {
+                            <tr class="@(n.IsRead ? "" : "table-warning")">
+                                <td>@n.Message</td>
+                                <td><span class="badge bg-secondary">@n.Module</span></td>
+                                <td>@n.ActionType</td>
+                                <td>@n.CreatedAt.ToString("g")</td>
+
+                                <td>
+                                    @if (n.IsRead)
+                                    {
+                                        <span class="text-success"><i class="fa-solid fa-check-circle"></i> Read</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger fw-bold">Unread</span>
+                                    }
+                                </td>
+
+                                <td class="text-center">
+                                    @if (!n.IsRead)
+                                    {
+                                        <form asp-action="MarkAsRead" method="post">
+                                            <input type="hidden" name="id" value="@n.NotificationId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-primary" title="Mark as Read">
+                                                <i class="fa-solid fa-check"></i> Mark Read
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-light text-muted" disabled>
+                                            <i class="fa-solid fa-check-double"></i> Done
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

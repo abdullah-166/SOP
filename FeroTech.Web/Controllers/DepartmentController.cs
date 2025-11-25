@@ -1,7 +1,9 @@
 ﻿using FeroTech.Infrastructure.Application.DTOs;
 using FeroTech.Infrastructure.Application.Interfaces;
+using FeroTech.Web.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace FeroTech.Web.Controllers
 {
@@ -9,10 +11,17 @@ namespace FeroTech.Web.Controllers
     public class DepartmentController : Controller
     {
         private readonly IDepartmentRepository _repo;
+        private readonly INotificationRepository _notificationRepo; // Added
+        private readonly IHubContext<NotificationHub> _hubContext;  // Added
 
-        public DepartmentController(IDepartmentRepository repo)
+        public DepartmentController(
+            IDepartmentRepository repo,
+            INotificationRepository notificationRepo,
+            IHubContext<NotificationHub> hubContext)
         {
             _repo = repo;
+            _notificationRepo = notificationRepo;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -31,10 +40,17 @@ namespace FeroTech.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(DepartmentDto model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest("Invalid data submitted.");
+            if (!ModelState.IsValid) return BadRequest("Invalid data submitted.");
 
             await _repo.AddAsync(model);
+
+            // --- SignalR ---
+            string msg = $"New department '{model.DepartmentName}' created.";
+            await _notificationRepo.AddAsync(msg, "Department", "Create");
+            int count = await _notificationRepo.GetUnreadCountAsync();
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", msg, count);
+            // ----------------
+
             return Json(new { success = true, message = "Department added successfully!" });
         }
 
@@ -42,8 +58,7 @@ namespace FeroTech.Web.Controllers
         public async Task<IActionResult> Edit(Guid id)
         {
             var entity = await _repo.GetByIdAsync(id);
-            if (entity == null)
-                return NotFound();
+            if (entity == null) return NotFound();
 
             var dto = new DepartmentDto
             {
@@ -52,17 +67,23 @@ namespace FeroTech.Web.Controllers
                 Description = entity.Description,
                 IsActive = entity.IsActive
             };
-
             return View(dto);
         }
 
         [HttpPost]
         public async Task<IActionResult> Edit(DepartmentDto model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest("Invalid data submitted.");
+            if (!ModelState.IsValid) return BadRequest("Invalid data submitted.");
 
             await _repo.UpdateAsync(model);
+
+            // --- SignalR ---
+            string msg = $"Department '{model.DepartmentName}' updated.";
+            await _notificationRepo.AddAsync(msg, "Department", "Update");
+            int count = await _notificationRepo.GetUnreadCountAsync();
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", msg, count);
+            // ----------------
+
             return Json(new { success = true, message = "Department updated successfully!" });
         }
 
@@ -70,10 +91,18 @@ namespace FeroTech.Web.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var existing = await _repo.GetByIdAsync(id);
-            if (existing == null)
-                return Json(new { success = false, message = "Department not found." });
+            if (existing == null) return Json(new { success = false, message = "Department not found." });
+            string name = existing.DepartmentName;
 
             await _repo.DeleteAsync(id);
+
+            // --- SignalR ---
+            string msg = $"Department '{name}' deleted.";
+            await _notificationRepo.AddAsync(msg, "Department", "Delete");
+            int count = await _notificationRepo.GetUnreadCountAsync();
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", msg, count);
+            // ----------------
+
             return Json(new { success = true, message = "Department deleted successfully!" });
         }
     }
