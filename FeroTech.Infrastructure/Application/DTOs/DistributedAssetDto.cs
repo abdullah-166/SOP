@@ -31,5 +31,6 @@ namespace FeroTech.Infrastructure.Application.DTOs
         public string EmployeePhone { get; set; } = "";
         public string AssetName { get; set; } = "";
         public string CategoryName { get; set; } = "";
+        public string? QRCodePath { get; set; }
     }
 }

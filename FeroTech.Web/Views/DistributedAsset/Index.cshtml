@@ -10,13 +10,20 @@
 
 <h2 class="mb-3">Assigned Assets</h2>
 
-<div class="text-end mb-3">
-    <a href="/DistributedAsset/Create" class="btn btn-success">+ Assign New Asset</a>
+<div class="row mb-3">
+    <div class="col-md-4">
+        <input type="text"
+               id="customSearch"
+               class="form-control"
+               placeholder="Search employee, phone, asset, category, date..." />
+    </div>
+
+    <div class="col-md-8 text-end">
+        <a href="/DistributedAsset/Create" class="btn btn-success">+ Assign New Asset</a>
+    </div>
 </div>
 
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
-
-<table id="groupedTable" class="table table-bordered display">
+<table id="groupedTable" class="table table-bordered">
     <thead class="table-dark">
         <tr>
             <th>Employee</th>
@@ -25,6 +32,7 @@
             <th>Category</th>
             <th>Start Date</th>
             <th>End Date</th>
+            <th>QR Code</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -47,14 +55,34 @@
 
                     <td>@item.AssetName</td>
                     <td>@item.CategoryName</td>
-
-                    <!-- UPDATED DATE FORMAT -->
                     <td>@item.AssignedDate.ToString("MM/dd/yyyy")</td>
                     <td>@(item.EndDate?.ToString("MM/dd/yyyy") ?? "-")</td>
 
                     <td>
-                        <a href="/DistributedAsset/Edit/@item.DistributedAssetId" class="btn btn-primary btn-sm">Edit</a>
-                        <button class="btn btn-danger btn-sm deleteBtn" data-id="@item.DistributedAssetId">Delete</button>
+                        @if (!string.IsNullOrEmpty(item.QRCodePath))
+                        {
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm qrBtn"
+                                    data-img="@item.QRCodePath">
+                                View QR
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-danger fw-bold">No QR</span>
+                        }
+                    </td>
+
+                    <td>
+                        <a href="/DistributedAsset/Edit/@item.DistributedAssetId"
+                           class="btn btn-primary btn-sm">
+                            Edit
+                        </a>
+                        <button type="button"
+                                class="btn btn-danger btn-sm deleteBtn"
+                                data-id="@item.DistributedAssetId">
+                            Delete
+                        </button>
                     </td>
                 </tr>
             }
@@ -62,48 +90,79 @@
     </tbody>
 </table>
 
+<div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qrModalLabel">QR Code</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="qrModalImg"
+                     src=""
+                     alt="QR Code"
+                     style="max-width: 100%; height: auto;" />
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script>
-        // Disable DataTables error popup for rowspan tables
-        $.fn.dataTable.ext.errMode = 'none';
-
         $(document).ready(function () {
+            $("#customSearch").on("keyup", function () {
+                let value = $(this).val().toLowerCase();
 
-            $("#groupedTable").DataTable({
-                paging: true,
-                searching: true,
-                ordering: false,
-                info: false,
-                autoWidth: false,
-                responsive: false
+                if (!value) {
+                    $("#groupedTable tbody tr").show();
+                    return;
+                }
+
+                $("#groupedTable tbody tr").each(function () {
+                    let rowText = $(this).text().toLowerCase();
+                    $(this).toggle(rowText.indexOf(value) > -1);
+                });
             });
-
-            // DELETE BUTTON
             $(document).on("click", ".deleteBtn", function () {
                 let id = $(this).data("id");
 
                 Swal.fire({
                     title: "Are you sure?",
-                    text: "This assignment will be removed",
+                    text: "This assigned asset will be deleted!",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonText: "Delete"
-                }).then(res => {
-                    if (res.isConfirmed) {
-                        $.post("/DistributedAsset/Delete", { id: id }, function (response) {
-                            if (response.success) {
-                                Swal.fire("Deleted!", response.message, "success")
-                                    .then(() => location.reload());
-                            } else {
-                                Swal.fire("Error", response.message, "error");
+                }).then(result => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: "/DistributedAsset/Delete",
+                            type: "POST",
+                            data: { id: id },
+                            success: function (response) {
+                                if (response.success) {
+                                    Swal.fire("Deleted!", response.message, "success")
+                                        .then(() => window.location.reload());
+                                } else {
+                                    Swal.fire("Error", response.message, "error");
+                                }
+                            },
+                            error: function () {
+                                Swal.fire("Error", "Delete request failed!", "error");
                             }
                         });
+
                     }
                 });
+            });
+            $(document).on("click", ".qrBtn", function () {
+                const imgSrc = $(this).data("img");
+                $("#qrModalImg").attr("src", imgSrc);
+                const modalEl = document.getElementById("qrModal");
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
             });
 
         });
