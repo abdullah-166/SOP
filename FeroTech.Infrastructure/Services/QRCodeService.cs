@@ -36,14 +36,11 @@ namespace FeroTech.Infrastructure.Services
                 });
             }
 
-            // Save QR codes to DB
             _context.QRCodes.AddRange(qrCodes);
             await _context.SaveChangesAsync();
 
-            // Generate PDF
             var pdfBytes = await GenerateQRCodePdfAsync(qrCodes);
 
-            // Save PDF to disk
             var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "qrcodes");
             if (!Directory.Exists(folderPath))
                 Directory.CreateDirectory(folderPath);
@@ -60,32 +57,26 @@ namespace FeroTech.Infrastructure.Services
 
             int x = 50;
             int y = 50;
-            int qrSize = 120;         // size of the QR image
-            int verticalSpacing = 180; // total vertical space per QR code (image + text + padding)
+            int qrSize = 150;
+            int verticalSpacing = 200;
 
             foreach (var qr in qrCodes)
             {
-                // Generate QR image
                 using var generator = new QRCodeGenerator();
                 var qrData = generator.CreateQrCode(qr.QRCodeValue, QRCodeGenerator.ECCLevel.Q);
                 var qrCode = new PngByteQRCode(qrData);
-                var qrBytes = qrCode.GetGraphic(10);
+                var qrBytes = qrCode.GetGraphic(40);
 
                 using var ms = new MemoryStream(qrBytes);
                 var img = XImage.FromStream(() => ms);
 
-                // Draw QR code image
                 gfx.DrawImage(img, x, y, qrSize, qrSize);
 
-                // Draw text directly below the QR code
-                var font = new XFont("Arial", 10, XFontStyle.Regular);
-                var textRect = new XRect(x, y + qrSize + 10, 400, 40);
-                gfx.DrawString(qr.QRCodeValue, font, XBrushes.Black, textRect, XStringFormats.TopLeft);
+                var font = new XFont("Arial", 12, XFontStyle.Regular);
+                gfx.DrawString(qr.QRCodeValue, font, XBrushes.Black, new XRect(x, y + qrSize + 10, 400, 40), XStringFormats.TopLeft);
 
-                // Move down for next QR code
                 y += verticalSpacing;
 
-                // Create new page if near bottom
                 if (y + qrSize + 60 > page.Height)
                 {
                     page = doc.AddPage();

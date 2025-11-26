@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Application\Services\" />
+    <Compile Remove="Application\Services\**" />
+    <EmbeddedResource Remove="Application\Services\**" />
+    <None Remove="Application\Services\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Domain\Common\" />
   </ItemGroup>
 

@@ -5,6 +5,8 @@ using FeroTech.Web.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using QRCoder;
+using System.Text;
 
 namespace FeroTech.Web.Controllers
 {
@@ -15,8 +17,9 @@ namespace FeroTech.Web.Controllers
         private readonly IEmployeeRepository _employeeRepo;
         private readonly IAssetRepository _assetRepo;
         private readonly ICategoryRepository _categoryRepo;
-        private readonly INotificationRepository _notificationRepo; // Added
-        private readonly IHubContext<NotificationHub> _hubContext;  // Added
+        private readonly INotificationRepository _notificationRepo;
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IDepartmentRepository _departmentRepo;
 
         public DistributedAssetController(
             IDistributedAssetRepository distributedRepo,
@@ -24,7 +27,8 @@ namespace FeroTech.Web.Controllers
             IAssetRepository assetRepo,
             ICategoryRepository categoryRepo,
             INotificationRepository notificationRepo,
-            IHubContext<NotificationHub> hubContext)
+            IHubContext<NotificationHub> hubContext,
+            IDepartmentRepository departmentRepo)
         {
             _distributedRepo = distributedRepo;
             _employeeRepo = employeeRepo;
@@ -32,11 +36,13 @@ namespace FeroTech.Web.Controllers
             _categoryRepo = categoryRepo;
             _notificationRepo = notificationRepo;
             _hubContext = hubContext;
+            _departmentRepo = departmentRepo;
         }
 
         public async Task<IActionResult> Index()
         {
             var list = new List<DistributedAssetListDto>();
+
             var distributed = await _distributedRepo.GetAllAsync();
             var employees = await _employeeRepo.GetAllAsync();
             var assets = await _assetRepo.GetAllAsync();
@@ -56,9 +62,11 @@ namespace FeroTech.Web.Controllers
                     AssetName = $"{asset?.Brand} {asset?.Modell}",
                     CategoryName = cat?.CategoryName ?? "",
                     AssignedDate = item.AssignedDate,
-                    EndDate = item.EndDate
+                    EndDate = item.EndDate,
+                    QRCodePath = item.QRCodePath
                 });
             }
+
             return View(list);
         }
 
@@ -71,29 +79,69 @@ namespace FeroTech.Web.Controllers
         }
 
         [HttpPost]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> Create(DistributedAsset model)
         {
-            if (!ModelState.IsValid) return Json(new { success = false, message = "Validation failed." });
+            if (!ModelState.IsValid)
+                return Json(new { success = false, message = "Validation failed." });
 
             var asset = await _assetRepo.GetByIdAsync(model.AssetId);
-            if (asset == null) return Json(new { success = false, message = "Asset not found." });
+            if (asset == null)
+                return Json(new { success = false, message = "Asset not found." });
 
-            if (asset.Quantity <= 0) return Json(new { success = false, message = "No stock available." });
+            if (asset.Quantity <= 0)
+                return Json(new { success = false, message = "No stock available." });
+
+            if (model.AssignedDate == default)
+                model.AssignedDate = DateTime.Today;
+            await _distributedRepo.AddAsync(model);
+
+            var emp = await _employeeRepo.GetByIdAsync(model.EmployeeId);
+            var departments = await _departmentRepo.GetAllAsync();
+            var dept = departments.FirstOrDefault(d => d.DepartmentId == emp?.DepartmentId);
+            var category = await _categoryRepo.GetByIdAsync(model.CategoryId);
+
+            string employeeName = emp?.FullName ?? "Unknown";
+            string employeePhone = emp?.Phone ?? "N/A";
+            string departmentName = dept?.DepartmentName ?? "N/A";
+            string categoryName = category?.CategoryName ?? "N/A";
+            string assetName = $"{asset.Brand} {asset.Modell}";
+            string assigned = model.AssignedDate.ToString("MM/dd/yyyy");
+            string ended = model.EndDate?.ToString("MM/dd/yyyy") ?? "-";
+
+            string qrText =
+         $@"Employee: {employeeName}
+            Phone: {employeePhone}
+            Department: {departmentName}
+            Category: {categoryName}
+            Asset: {assetName}
+            Assigned: {assigned}
+            End: {ended}";
+
+            QRCodeGenerator qrGen = new QRCodeGenerator();
+            QRCodeData qrData = qrGen.CreateQrCode(qrText, QRCodeGenerator.ECCLevel.Q);
+            var qrCode = new PngByteQRCode(qrData);
+
+            byte[] qrBytes = qrCode.GetGraphic(40);
+
+            string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "qrcodes");
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+            string fileName = $"{model.DistributedAssetId}.png";
+            string filePath = Path.Combine(folder, fileName);
+
+            System.IO.File.WriteAllBytes(filePath, qrBytes);
+
+            model.QRCodePath = "/qrcodes/" + fileName;
+            await _distributedRepo.UpdateAsync(model);
 
             asset.Quantity -= 1;
             await _assetRepo.UpdateAsync(asset);
-            await _distributedRepo.AddAsync(model);
-
-            // --- SignalR ---
-            var emp = await _employeeRepo.GetByIdAsync(model.EmployeeId);
-            string msg = $"Asset '{asset.Brand}' assigned to '{emp?.FullName}'.";
-            await _notificationRepo.AddAsync(msg, "Distribution", "Assign");
-            int count = await _notificationRepo.GetUnreadCountAsync();
-            await _hubContext.Clients.All.SendAsync("ReceiveNotification", msg, count);
-            // ----------------
 
             return Json(new { success = true, message = "Asset assigned successfully!" });
         }
+
 
         [HttpPost]
         [IgnoreAntiforgeryToken]
@@ -158,7 +206,6 @@ namespace FeroTech.Web.Controllers
 
             var assetRepo = HttpContext.RequestServices.GetRequiredService<IAssetRepository>();
 
-            // Stock Management Logic
             if (oldAssetId != AssetId)
             {
                 var oldAsset = await assetRepo.GetByIdAsync(oldAssetId);
@@ -173,13 +220,10 @@ namespace FeroTech.Web.Controllers
                 }
             }
 
-            // --- SignalR ---
             string msg = $"Asset assignment updated.";
             await _notificationRepo.AddAsync(msg, "Distribution", "Update");
             int count = await _notificationRepo.GetUnreadCountAsync();
             await _hubContext.Clients.All.SendAsync("ReceiveNotification", msg, count);
-            // ----------------
-
             return Json(new { success = true, message = "Updated successfully!" });
         }
     }

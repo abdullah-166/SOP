@@ -25,7 +25,6 @@ namespace FeroTech.Infrastructure.Domain.Entities
 
         [StringLength(100)]
         public string? JobTitle { get; set; }
-
         public bool IsActive { get; set; } = true;
     }
 }
