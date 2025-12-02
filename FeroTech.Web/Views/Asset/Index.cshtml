@@ -2,32 +2,75 @@
     ViewData["Title"] = "Asset Details";
 }
 
-<h2>Asset Details</h2>
-<hr />
+<div class="asset-page">
 
-<div class="text-end mb-3">
-    <a href="@Url.Action("Create", "Asset")" class="btn btn-success">+ Add Asset</a>
-</div>
+    <h2>Asset Details</h2>
+    <hr />
 
-<link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.min.css" />
+    <!-- PAGE-SPECIFIC CSS -->
+    <style>
+        /* Make page text white (ONLY inside .asset-page) */
+        .asset-page h2,
+        .asset-page hr,
+        .asset-page label,
+        .asset-page span,
+        .asset-page p,
+        .asset-page a,
+        .asset-page div {
+            color: white !important;
+        }
 
-<table id="assetTable" class="display" style="width:100%">
-    <thead>
-        <tr>
-            <th>Category</th>
-            <th>Brand</th>
-            <th>Model</th>
-            <th>Purchase Date</th>
-            <th>Price</th>
-            <th>Warranty End</th>
-            <th>Status</th>
-            <th>Quantity</th>
-            <th>Active</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-</table>
+        /* Table header black */
+        .asset-page table thead th {
+            background-color: black !important;
+            color: white !important;
+        }
 
+        /* Table body text black */
+        .asset-page table tbody td {
+            color: white !important;
+        }
+
+        /* Datatables labels (Search, Entries per page) white */
+        .asset-page .dt-search label,
+        .asset-page .dt-length,
+        .asset-page .dt-length label {
+            color: white !important;
+        }
+
+            /* Search box + dropdown white text */
+            .asset-page .dt-search input,
+            .asset-page .dt-length select {
+                color: white !important;
+                background-color: #0a2342 !important;
+                border: 1px solid #ccc;
+            }
+    </style>
+
+    <div class="text-end mb-3">
+        <a href="@Url.Action("Create", "Asset")" class="btn btn-success">+ Add Asset</a>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.min.css" />
+
+    <table id="assetTable" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Brand</th>
+                <th>Model</th>
+                <th>Purchase Date</th>
+                <th>Price</th>
+                <th>Warranty End</th>
+                <th>Status</th>
+                <th>Quantity</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+    </table>
+
+</div> <!-- END asset-page -->
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>

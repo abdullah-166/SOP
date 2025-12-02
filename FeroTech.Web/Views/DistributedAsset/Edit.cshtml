@@ -7,7 +7,7 @@
     var assets = ViewBag.AssetList as IEnumerable<FeroTech.Infrastructure.Domain.Entities.Asset>;
 }
 
-<h2>Edit Assigned Asset</h2>
+<h2 style="color:white; text-align:center">Edit Assigned Asset</h2>
 <hr />
 
 <form id="editForm">
@@ -16,7 +16,7 @@
     <div class="row">
 
         <!-- EMPLOYEE -->
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white; text-align:center">
             <label>Employee</label>
             <select name="EmployeeId" id="EmployeeId" class="form-select">
                 @if (employees != null)
@@ -32,7 +32,7 @@
         </div>
 
         <!-- CATEGORY -->
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white; text-align:center">
             <label>Category</label>
             <select name="CategoryId" id="CategoryId" class="form-select">
                 @if (categories != null)
@@ -48,7 +48,7 @@
         </div>
 
         <!-- ASSET -->
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white; text-align:center">
             <label>Asset</label>
             <select name="AssetId" id="AssetId" class="form-select">
                 @if (assets != null)
@@ -64,7 +64,7 @@
         </div>
 
         <!-- DATES -->
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white; text-align:center">
             <label>Assigned Date</label>
             <input name="AssignedDate"
                    type="date"
@@ -72,7 +72,7 @@
                    value="@Model.AssignedDate.ToString("yyyy-MM-dd")" />
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white; text-align:center">
             <label>End Date</label>
             <input name="EndDate"
                    type="date"
@@ -81,7 +81,7 @@
         </div>
 
         <!-- NOTES -->
-        <div class="col-md-12 mb-3">
+        <div class="col-md-12 mb-3" style="color:white; text-align:center">
             <label>Notes</label>
             <textarea name="Notes" class="form-control">@Model.Notes</textarea>
         </div>

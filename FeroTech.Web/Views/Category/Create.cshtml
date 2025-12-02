@@ -1,16 +1,16 @@
 ﻿@model FeroTech.Infrastructure.Application.DTOs.CategoryDto
 
-<h2>Add Category</h2>
+<h2 style="color:white; text-align:center">Add Category</h2>
 <hr />
 
 <form asp-action="Create">
-    <div class="mb-3">
+    <div class="mb-3" style="color:white;">
         <label class="form-label">Category Name</label>
         <input asp-for="CategoryName" class="form-control" />
         <span asp-validation-for="CategoryName" class="text-danger"></span>
     </div>
 
-    <div class="mb-3 form-check">
+    <div class="mb-3 form-check" style="color:white;">
         <input class="form-check-input" asp-for="IsActive" />
         <label class="form-check-label">Active</label>
     </div>

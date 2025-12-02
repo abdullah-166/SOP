@@ -4,7 +4,7 @@
     ViewData["Title"] = "Edit Department";
 }
 
-<h2 class="mb-3">Edit Department</h2>
+<h2 class="mb-3" style="color: white; text-align: center;font-size:50px">Edit Department</h2>
 <hr />
 
 <form id="editDepartmentForm">
@@ -13,19 +13,19 @@
     <div class="row">
         <!-- Department Name -->
         <div class="col-md-6 mb-3">
-            <label class="form-label">Department Name</label>
+            <label class="form-label" style= "color: white; text-align: center;">Department Name</label>
             <input asp-for="DepartmentName" class="form-control" />
             <span asp-validation-for="DepartmentName" class="text-danger"></span>
         </div>
 
         <!-- Description -->
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style= "color: white; text-align: center;">
             <label class="form-label">Description</label>
             <input asp-for="Description" class="form-control" />
         </div>
 
         <!-- Active -->
-        <div class="col-md-6 mb-3 d-flex align-items-center">
+        <div class="col-md-6 mb-3 d-flex align-items-center" style="color: white; text-align: center;">
             <label class="form-label me-2">Active:</label>
             <input asp-for="IsActive" type="checkbox" class="form-check-input" />
         </div>

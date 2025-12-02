@@ -1,43 +1,68 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using FeroTech.Web.Models;
-using FeroTech.Infrastructure.Data; // <-- ADDED
-using System.Linq;
-using Microsoft.AspNetCore.Authorization; // <-- ADDED
+using FeroTech.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
-namespace FeroTech.Web.Controllers;
-[Authorize]
-public class HomeController : Controller
+namespace FeroTech.Web.Controllers
 {
-    private readonly ILogger<HomeController> _logger;
-    private readonly ApplicationDbContext _context; // <-- ADDED
-
-    public HomeController(ILogger<HomeController> logger, ApplicationDbContext context) // <-- UPDATED
+    [Authorize]
+    public class HomeController : Controller
     {
-        _logger = logger;
-        _context = context; // <-- ADDED
-    }
+        private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext _context;
 
-    public IActionResult Index()
-    {
-        // --- ADDED THIS LOGIC ---
-        // Get the count from the database
-        int employeeCount = _context.Employees.Count();
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        {
+            _logger = logger;
+            _context = context;
+        }
 
-        // Pass the count to the view
-        ViewData["EmployeeCount"] = employeeCount;
-        // --- END ---
-        return View();
-    }
+        public async Task<IActionResult> Index()
+        {
+            ViewData["EmployeeCount"] = await _context.Employees.CountAsync();
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+            ViewData["LastEmployees"] = await _context.Employees
+                .OrderByDescending(e => e.EmployeeId)
+                .Take(10)
+                .ToListAsync();
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            ViewData["Categories"] = await _context.Categories
+                .OrderBy(c => c.CategoryName)
+                .ToListAsync();
+
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPendingAssets(Guid categoryId)
+        {
+            var pending = await _context.Assets
+                .Where(a => a.CategoryId == categoryId && a.Quantity > 0)
+                .Select(a => new
+                {
+                    brand = a.Brand,
+                    modell = a.Modell,
+                    quantity = a.Quantity
+                })
+                .ToListAsync();
+
+            return Json(pending);
+        }
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            });
+        }
     }
 }

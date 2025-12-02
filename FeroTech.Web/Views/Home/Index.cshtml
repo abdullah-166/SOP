@@ -1,229 +1,143 @@
-﻿@{
-    ViewData["Title"] = "Dashboard";
-}
+﻿<div style="background-color:#b8cef2; min-height:100vh; padding:20px;">
+    @{
+        ViewData["Title"] = "Dashboard";
+        var lastEmployees = ViewData["LastEmployees"] as List<FeroTech.Infrastructure.Domain.Entities.Employee>;
+        var categories = ViewData["Categories"] as List<FeroTech.Infrastructure.Domain.Entities.Category>;
+    }
 
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-</div>
+    <div class="d-sm-flex align-items-center justify-content-center text-color:black mb-4">
+        <h1 class="h3 mb-0 text-black-1200" style="color:black; font-size: 60px;">Dashboard</h1>
+    </div>
 
-<div class="row">
+    <div class="row">
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Total Employees
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card shadow h-100 py-2" style="background-color:#4e73df; color:white;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-black fw-bold text-uppercase mb-1">Total Employees </div>
+                            <div class="h5 mb-0 fw-bold">@ViewData["EmployeeCount"]</div>
                         </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">@ViewData["EmployeeCount"]</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                        <div><i class="fas fa-users fa-2x" style="color:white;"></i></div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-success text-uppercase mb-1">
-                            Pending Tasks
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2"
+                 data-bs-toggle="modal" data-bs-target="#lastEmployeeModal"
+                 style="cursor:pointer;background-color:#1cc88a; color:white; border:none;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-black fw-bold text-success text-uppercase mb-1">Last 10 Employees</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@lastEmployees.Count()</div>
                         </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">12</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                        <div><i class="fas fa-user-plus fa-2x text-gray-300"></i></div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-info text-uppercase mb-1">
-                            New Registrations
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">7</div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2" style="background-color:#f2bb91; color:white;">
+                <div class="card-body">
+
+                    <div class="text-xs fw-bold text-black text-uppercase mb-1">
+                        Pending Assets (By Category)
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-user-plus fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-warning text-uppercase mb-1">
-                            Pending Reports
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">3</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-file-alt fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-
-    <div class="col-xl-8 col-lg-7">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 fw-bold text-primary">Revenue Overview</h6>
-            </div>
-            <div class="card-body">
-                <div class="chart-area">
-                    <canvas id="myAreaChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-4 col-lg-5">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 fw-bold text-primary">Revenue Sources</h6>
-            </div>
-            <div class="card-body">
-                <div class="chart-pie pt-4">
-                    <canvas id="myPieChart"></canvas>
-                </div>
-                <div class="mt-4 text-center small">
-                    <span class="me-2">
-                        <i class="fas fa-circle text-primary"></i> Direct
-                    </span>
-                    <span class="me-2">
-                        <i class="fas fa-circle text-success"></i> Social
-                    </span>
-                    <span class="me-2">
-                        <i class="fas fa-circle text-info"></i> Referral
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-@section Scripts {
-    <script>
-        // Set new default font for charts
-        Chart.defaults.font.family = "Nunito, -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-        Chart.defaults.font.size = 14;
-        Chart.defaults.color = '#858796';
-
-        // --- Area Chart Example ---
-        var ctxArea = document.getElementById("myAreaChart");
-        var myAreaChart = new Chart(ctxArea, {
-            type: 'line',
-            data: {
-                labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-                datasets: [{
-                    label: "Revenue",
-                    lineTension: 0.3,
-                    backgroundColor: "rgba(0, 123, 255, 0.05)",
-                    borderColor: "rgba(0, 123, 255, 1)",
-                    pointRadius: 3,
-                    pointBackgroundColor: "rgba(0, 123, 255, 1)",
-                    pointBorderColor: "rgba(0, 123, 255, 1)",
-                    pointHoverRadius: 3,
-                    pointHoverBackgroundColor: "rgba(0, 123, 255, 1)",
-                    pointHoverBorderColor: "rgba(0, 123, 255, 1)",
-                    pointHitRadius: 10,
-                    pointBorderWidth: 2,
-                    data: [0, 10000, 5000, 15000, 10000, 20000, 15000, 25000, 20000, 30000, 25000, 40000],
-                }],
-            },
-            options: {
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        grid: {
-                            display: false,
-                            drawBorder: false
+                    <select id="pendingCategory" class="form-select mb-2">
+                        <option value="">-- Select Category --</option>
+                        @foreach (var c in categories)
+                        {
+                            <option value="@c.CategoryId">@c.CategoryName</option>
                         }
-                    },
-                    y: {
-                        ticks: {
-                            // Format
-                            callback: function (value) {
-                                return '$' + value;
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function (context) {
-                                var label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                }
-            }
-        });
+                    </select>
+                    <button class="btn btn-info btn-sm mt-2" id="viewPendingBtn" style="display:none;">
+                        View Details
+                    </button>
 
-        // --- Pie Chart Example ---
-        var ctxPie = document.getElementById("myPieChart");
-        var myPieChart = new Chart(ctxPie, {
-            type: 'doughnut',
-            data: {
-                labels: ["Direct", "Referral", "Social"],
-                datasets: [{
-                    data: [55, 30, 15],
-                    backgroundColor: ['#007bff', '#1cc88a', '#36b9cc'],
-                    hoverBackgroundColor: ['#0056b3', '#17a673', '#2a96a5'],
-                    hoverBorderColor: "rgba(234, 236, 244, 1)",
-                }],
-            },
-            options: {
-                maintainAspectRatio: false,
-                plugins: {
-                    tooltip: {
-                        backgroundColor: "rgb(255,255,255)",
-                        bodyColor: "#858796",
-                        borderColor: '#dddfeb',
-                        borderWidth: 1,
-                        xPadding: 15,
-                        yPadding: 15,
-                        displayColors: false,
-                        caretPadding: 10,
-                    },
-                    legend: {
-                        display: false
-                    }
-                },
-                cutout: '80%',
-            },
-        });
+                </div>
+            </div>
+        </div>
 
-    </script>
-}
+    </div>
+
+    <div class="modal fade" id="lastEmployeeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Last 10 Added Employees</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                        @foreach (var emp in lastEmployees)
+                        {
+                            <li class="list-group-item">
+                                <strong>@emp.FullName</strong> — @emp.Email
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="pendingModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pending Assets</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Brand</th>
+                                <th>Model</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+            $("#pendingCategory").change(function () {
+                let id = $(this).val();
+                if (!id) return;
+
+                $.get("/Home/GetPendingAssets", { categoryId: id }, function (res) {
+
+                    $("#pendingCount").text(res.length);
+                    $("#viewPendingBtn").show();
+
+                    let html = "";
+                    res.forEach(x => {
+                        html += `
+                            <tr>
+                                <td>${x.brand}</td>
+                                <td>${x.modell}</td>
+                                <td>${x.quantity}</td>
+                            </tr>`;
+                    });
+
+                    $("#pendingBody").html(html);
+                });
+            });
+
+            $("#viewPendingBtn").click(function () {
+                $("#pendingModal").modal("show");
+            });
+        </script>
+    }
+</div>

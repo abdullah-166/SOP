@@ -2,7 +2,24 @@
     ViewData["Title"] = "Employee Management";
 }
 
-<h2 class="mb-4">Employee List</h2>
+<h2 class="mb-4" style="color:white">Employee List</h2>
+
+<style>
+    /* Entries per page */
+    .dt-length,
+    .dt-length label,
+    .dt-length span {
+        color: white !important;
+    }
+
+    /* Search label */
+    .dt-search,
+    .dt-search label,
+    .dt-search span {
+        color: white !important;
+    }
+</style>
+
 
 <div class="mb-3 text-end">
     <a asp-action="Create" class="btn btn-primary">

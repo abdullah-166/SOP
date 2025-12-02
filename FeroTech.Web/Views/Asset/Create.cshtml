@@ -4,14 +4,14 @@
     ViewData["Title"] = "Create Asset";
 }
 
-<h2>Create Asset</h2>
+<h2 style="color:white;">Create Asset</h2>
 
 <hr />
 
 <form asp-action="Create" method="post">
     <div class="row">
         <!-- Category Dropdown -->
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white;">
             <label class="form-label">Category</label>
             <select asp-for="CategoryId" class="form-control">
                 <option value="">-- Select Category --</option>
@@ -22,53 +22,53 @@
             </select>
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white;">
             <label class="form-label">Brand</label>
             <input asp-for="Brand" class="form-control" />
             <span asp-validation-for="Brand" class="text-danger"></span>
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white;">
             <label class="form-label">Model</label>
             <input asp-for="Modell" class="form-control" />
             <span asp-validation-for="Modell" class="text-danger"></span>
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white;">
             <label class="form-label">Purchase Date</label>
             <input asp-for="PurchaseDate" type="date" class="form-control" />
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white;">
             <label class="form-label">Purchase Order No</label>
             <input asp-for="PurchaseOrderNo" class="form-control" />
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white;">
             <label class="form-label">Supplier</label>
             <input asp-for="Supplier" class="form-control" />
             <span asp-validation-for="Supplier" class="text-danger"></span>
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white;">
             <label class="form-label">Purchase Price</label>
             <input asp-for="PurchasePrice" class="form-control" />
             <span asp-validation-for="PurchasePrice" class="text-danger"></span>
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white;">
             <label class="form-label">Warranty End Date</label>
             <input asp-for="WarrantyEndDate" type="date" class="form-control" />
             <span asp-validation-for="WarrantyEndDate" class="text-danger"></span>
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white;">
             <label class="form-label">Quantity</label>
             <input asp-for="Quantity" type="number" class="form-control" min="1" />
             <span asp-validation-for="Quantity" class="text-danger"></span>
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" style="color:white;">
             <label class="form-label">Status</label>
             <select asp-for="Status" class="form-select">
                 <option value="Available">Available</option>
@@ -79,7 +79,7 @@
             <span asp-validation-for="Status" class="text-danger"></span>
         </div>
 
-        <div class="col-md-12 mb-3">
+        <div class="col-md-12 mb-3" style="color:white;">
             <label class="form-label">Notes</label>
             <textarea asp-for="Notes" class="form-control"></textarea>
             <span asp-validation-for="Notes" class="text-danger"></span>
